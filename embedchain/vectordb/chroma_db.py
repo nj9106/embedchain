@@ -84,7 +84,7 @@ class ChromaDB(BaseVectorDB):
             )
         ]
 
-    def query(self, input_query: List[str], n_results: int, where: Dict[str, any]) -> List[str]:
+    def query(self, input_query: List[str], n_results: int, where: Dict[str, any], content_only=False) -> List[str]:
         """
         query contents from vector data base based on vector similarity
         :param input_query: list of query string
@@ -105,10 +105,12 @@ class ChromaDB(BaseVectorDB):
                 e.message()
                 + ". This is commonly a side-effect when an embedding function, different from the one used to add the embeddings, is used to retrieve an embedding from the database."  # noqa E501
             ) from None
-
-        results_formatted = self._format_result(result)
-        contents = [result[0].page_content for result in results_formatted]
-        return contents
+        if content_only:
+            results_formatted = self._format_result(result)
+            contents = [result[0].page_content for result in results_formatted]
+            return contents
+        else:
+            return result
 
     def count(self) -> int:
         return self.collection.count()
