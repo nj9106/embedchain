@@ -11,6 +11,15 @@ if len(sys.argv) < 2:
 
 appConfig = AppConfig(log_level='DEBUG')
 qa = App(config=appConfig)
+urlPrefix = 'https://www.tapd.cn/31690354/bugtrace/bugs/view?bug_id='
 q = sys.argv[1]
 queryConfig = QueryConfig(number_documents=3)
-print(qa.retrieve_from_database(q, config=queryConfig))
+results = qa.retrieve_from_database(q, config=queryConfig)
+out = []
+i = 0
+while i < len(results['documents'][0]):
+    metadata = results['metadatas'][0][i]
+    o = {"question": results['documents'][0][i], "summary": metadata['summary'], "url": f"{urlPrefix}{metadata['id']}"}
+    out.append(o)
+    i = i+1
+print(out)
