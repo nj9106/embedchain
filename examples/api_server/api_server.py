@@ -43,7 +43,7 @@ def query():
                 o = {"question": results['documents'][0][i], "summary": metadata['summary'], "url": f"{urlPrefix}{metadata['id']}"}
                 out.append(o)
                 i = i+1
-            return jsonify(o), 200
+            return jsonify(out), 200
         except Exception:
             return jsonify({"error": "An error occurred. Please try again!"}), 500
     return jsonify({"error": "Invalid request. Please provide 'question' in JSON format."}), 400
