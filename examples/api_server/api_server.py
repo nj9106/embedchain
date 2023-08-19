@@ -1,27 +1,32 @@
 from flask import Flask, jsonify, request
 
 from embedchain import App
+from embedchain.config import AppConfig
+from embedchain.config import QueryConfig
 
 app = Flask(__name__)
 
+appConfig = AppConfig(log_level='DEBUG')
+queryConfig = QueryConfig(number_documents=3)
+urlPrefix = 'https://www.tapd.cn/31690354/bugtrace/bugs/view?bug_id='
 
 def initialize_chat_bot():
     global chat_bot
-    chat_bot = App()
+    chat_bot = App(config=appConfig)
 
 
-@app.route("/add", methods=["POST"])
-def add():
-    data = request.get_json()
-    data_type = data.get("data_type")
-    url_or_text = data.get("url_or_text")
-    if data_type and url_or_text:
-        try:
-            chat_bot.add(data_type, url_or_text)
-            return jsonify({"data": f"Added {data_type}: {url_or_text}"}), 200
-        except Exception:
-            return jsonify({"error": f"Failed to add {data_type}: {url_or_text}"}), 500
-    return jsonify({"error": "Invalid request. Please provide 'data_type' and 'url_or_text' in JSON format."}), 400
+# @app.route("/add", methods=["POST"])
+# def add():
+#     data = request.get_json()
+#     data_type = data.get("data_type")
+#     url_or_text = data.get("url_or_text")
+#     if data_type and url_or_text:
+#         try:
+#             chat_bot.add(data_type, url_or_text)
+#             return jsonify({"data": f"Added {data_type}: {url_or_text}"}), 200
+#         except Exception:
+#             return jsonify({"error": f"Failed to add {data_type}: {url_or_text}"}), 500
+#     return jsonify({"error": "Invalid request. Please provide 'data_type' and 'url_or_text' in JSON format."}), 400
 
 
 @app.route("/query", methods=["POST"])
@@ -30,24 +35,31 @@ def query():
     question = data.get("question")
     if question:
         try:
-            response = chat_bot.query(question)
-            return jsonify({"data": response}), 200
+            results = chat_bot.retrieve_from_database(question, config=queryConfig)
+            out = []
+            i = 0
+            while i < len(results['documents'][0]):
+                metadata = results['metadatas'][0][i]
+                o = {"question": results['documents'][0][i], "summary": metadata['summary'], "url": f"{urlPrefix}{metadata['id']}"}
+                out.append(o)
+                i = i+1
+            return jsonify(o), 200
         except Exception:
             return jsonify({"error": "An error occurred. Please try again!"}), 500
     return jsonify({"error": "Invalid request. Please provide 'question' in JSON format."}), 400
 
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.get_json()
-    question = data.get("question")
-    if question:
-        try:
-            response = chat_bot.chat(question)
-            return jsonify({"data": response}), 200
-        except Exception:
-            return jsonify({"error": "An error occurred. Please try again!"}), 500
-    return jsonify({"error": "Invalid request. Please provide 'question' in JSON format."}), 400
+# @app.route("/chat", methods=["POST"])
+# def chat():
+#     data = request.get_json()
+#     question = data.get("question")
+#     if question:
+#         try:
+#             response = chat_bot.chat(question)
+#             return jsonify({"data": response}), 200
+#         except Exception:
+#             return jsonify({"error": "An error occurred. Please try again!"}), 500
+#     return jsonify({"error": "Invalid request. Please provide 'question' in JSON format."}), 400
 
 
 if __name__ == "__main__":
