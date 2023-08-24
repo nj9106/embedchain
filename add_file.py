@@ -6,9 +6,9 @@ from embedchain import App
 from embedchain.config import AppConfig
 
 
-appConfig = AppConfig(log_level='DEBUG')
+appConfig = AppConfig(log_level='DEBUG',collect_metrics=False)
 qa = App(config=appConfig)
-meta = {"id":"1131690354001020772","summary":"this is an example summary."}
+# meta = {"id":"1131690354001020772","summary":"this is an example summary."}
 filename = '/root/tapd/tapd.txt'
 i = 0
 with open(filename, 'r') as file:

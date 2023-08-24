@@ -6,14 +6,18 @@ from embedchain.config import QueryConfig
 
 app = Flask(__name__)
 
-appConfig = AppConfig(log_level='DEBUG')
+appConfig = AppConfig(log_level='DEBUG',collect_metrics=False)
 queryConfig = QueryConfig(number_documents=3)
 urlPrefix = 'https://www.tapd.cn/31690354/bugtrace/bugs/view?bug_id='
 
+knowledgeConfig = AppConfig(collection_name='knowledge',log_level='DEBUG',collect_metrics=False)
+knowledgePrefix  = 'https://helpy-dev.plaso.cn/zh/'
+
 def initialize_chat_bot():
     global chat_bot
+    global knowledge
     chat_bot = App(config=appConfig)
-
+    knowledge = App(config=knowledgeConfig)
 
 # @app.route("/add", methods=["POST"])
 # def add():
@@ -41,6 +45,13 @@ def query():
             while i < len(results['documents'][0]):
                 metadata = results['metadatas'][0][i]
                 o = {"question": results['documents'][0][i], "summary": metadata['summary'], "url": f"{urlPrefix}{metadata['id']}"}
+                out.append(o)
+                i = i+1
+            results = knowledge.retrieve_from_database(question)
+            i = 0
+            while i < len(results['documents'][0]):
+                metadata = results['metadatas'][0][i]
+                o = {"question": results['documents'][0][i], "summary": metadata['summary'], "url": f"{knowledgePrefix}{metadata['path']}"}
                 out.append(o)
                 i = i+1
             return jsonify(out), 200
