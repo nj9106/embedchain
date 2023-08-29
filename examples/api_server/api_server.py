@@ -12,6 +12,7 @@ urlPrefix = 'https://www.tapd.cn/31690354/bugtrace/bugs/view?bug_id='
 
 knowledgeConfig = AppConfig(collection_name='knowledge',log_level='DEBUG',collect_metrics=False)
 knowledgePrefix  = 'https://helpy-dev.plaso.cn/zh/'
+kn_queryConfig = QueryConfig(number_documents=1)
 
 def initialize_chat_bot():
     global chat_bot
@@ -47,7 +48,7 @@ def query():
                 o = {"question": results['documents'][0][i], "summary": metadata['summary'], "url": f"{urlPrefix}{metadata['id']}"}
                 out.append(o)
                 i = i+1
-            results = knowledge.retrieve_from_database(question)
+            results = knowledge.retrieve_from_database(question,kn_queryConfig)
             i = 0
             while i < len(results['documents'][0]):
                 metadata = results['metadatas'][0][i]
@@ -55,7 +56,8 @@ def query():
                 out.append(o)
                 i = i+1
             return jsonify(out), 200
-        except Exception:
+        except Exception as e:
+            print(e)
             return jsonify({"error": "An error occurred. Please try again!"}), 500
     return jsonify({"error": "Invalid request. Please provide 'question' in JSON format."}), 400
 
