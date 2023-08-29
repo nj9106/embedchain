@@ -12,8 +12,10 @@ import time
 if len(sys.argv) < 2:
     print("没有提供日期，格式 2023-01-01")
     sys.exit(0)
+closed = sys.argv[1]
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
+tapd_key = os.getenv("TAPD")
 model = "gpt-3.5-turbo-0613"
 max_tokens = 500
 
@@ -64,7 +66,7 @@ h.ignore_links = True
 h.ignore_images = True
 h.single_line_break = True
 
-auth=('QIhiPOt','15A05C95-A927-024A-2007-3D60D1E0D473')
+auth=('QIhiPOt',tapd_key)
 
 file = open("tapd.txt", "a")
 retry = Retry(total=10, connect=5, read=5, backoff_factor=10, status_forcelist=[500, 502, 503, 504])
@@ -72,14 +74,14 @@ session = requests.Session()
 session.mount("https://", HTTPAdapter(max_retries=retry))
 session.auth = auth
 
-page = 9
-while page <= 100:
+page = 1
+while page <= 5:
     print( f"current page: {page}" )
     params = { 'workspace_id': '31690354',
                 'status': 'closed',
                 'page': page,
                 'order': 'created desc',
-                'closed': '2023-08-17',
+                'closed': closed,
                 'fields': 'id,title,description,created,closed'
              }
 
