@@ -3,6 +3,12 @@ from flask import Flask, jsonify, request
 from embedchain import App
 from embedchain.config import AppConfig
 from embedchain.config import QueryConfig
+import sys
+
+if len(sys.argv) < 2:
+    port = 5000
+else:
+    port = sys.argv[1]
 
 app = Flask(__name__)
 
@@ -77,4 +83,4 @@ def query():
 
 if __name__ == "__main__":
     initialize_chat_bot()
-    app.run(host="0.0.0.0", port=5001, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)
