@@ -4,6 +4,7 @@ from embedchain import App
 from embedchain.config import AppConfig
 from embedchain.config import QueryConfig
 import sys
+import logging
 
 if len(sys.argv) < 2:
     port = 5000
@@ -19,6 +20,9 @@ urlPrefix = 'https://www.tapd.cn/31690354/bugtrace/bugs/view?bug_id='
 knowledgeConfig = AppConfig(collection_name='knowledge',log_level='DEBUG',collect_metrics=False)
 knowledgePrefix  = 'https://helpy-dev.plaso.cn/zh/'
 kn_queryConfig = QueryConfig(number_documents=1)
+
+count=0
+
 
 def initialize_chat_bot():
     global chat_bot
@@ -42,9 +46,12 @@ def initialize_chat_bot():
 
 @app.route("/query", methods=["POST"])
 def query():
+    global count
     data = request.get_json()
     question = data.get("question")
     if question:
+        count=count+1
+        logging.info(f"---{count}--- {question}")
         try:
             results = chat_bot.retrieve_from_database(question, config=queryConfig)
             out = []
@@ -61,6 +68,7 @@ def query():
                 o = {"question": results['documents'][0][i], "summary": metadata['summary'], "url": f"{knowledgePrefix}{metadata['path']}"}
                 out.append(o)
                 i = i+1
+            logging.info(f"out:{out}")
             return jsonify(out), 200
         except Exception as e:
             print(e)
